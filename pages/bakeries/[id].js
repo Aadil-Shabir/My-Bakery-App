@@ -3,28 +3,31 @@ import Link from "next/link";
 import styles from "../../styles/bakery.module.css";
 
 import bakeriesData from "../../data/bakeries.json";
+import { fetchBakeries } from "../../lib/bakery-store";
 import Head from "next/head";
 import Image from "next/image";
 
 import cls from "classnames";
 
-export function getStaticProps(statisProps) {
+export async function getStaticProps(statisProps) {
   const params = statisProps.params;
   console.log("params", params);
+  const bakeries = await fetchBakeries();
   return {
     props: {
-      bakeries: bakeriesData.find((bakery) => {
-        return bakery.id.toString() === params.id;
+      bakeries: bakeries.find((bakery) => {
+        return bakery.fsq_id.toString() === params.id;
       }),
     },
   };
 }
 
-export function getStaticPaths() {
-  const paths = bakeriesData.map((bakery) => {
+export async function getStaticPaths() {
+  const bakeries = await fetchBakeries();
+  const paths = bakeries.map((bakery) => {
     return {
       params: {
-        id: bakery.id.toString(),
+        id: bakery.fsq_id.toString(),
       },
     };
   });
@@ -46,7 +49,7 @@ const Bakeries = (props) => {
     console.log("handle Upvote");
   };
 
-  const { address, name, neighbourhood, imgUrl } = props.bakeries;
+  const { location, name, imgUrl } = props.bakeries;
 
   return (
     <div className={styles.layout}>
@@ -64,7 +67,10 @@ const Bakeries = (props) => {
             <h1 className={styles.name}>{name}</h1>
           </div>
           <Image
-            src={imgUrl}
+            src={
+              imgUrl ||
+              "https://images.unsplash.com/photo-1498804103079-a6351b050096?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2468&q=80"
+            }
             width={600}
             height={360}
             alt={name}
@@ -79,7 +85,7 @@ const Bakeries = (props) => {
               height="24"
               alt={name}
             />
-            <p className={styles.text}>{address}</p>
+            <p className={styles.text}>{location.address}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image
@@ -88,7 +94,7 @@ const Bakeries = (props) => {
               height="24"
               alt={name}
             />
-            <p className={styles.text}>{neighbourhood}</p>
+            <p className={styles.text}>{location.locality}</p>
           </div>
           <div className={styles.iconWrapper}>
             <Image

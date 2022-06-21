@@ -11,6 +11,7 @@ const Card = (props) => {
         <div className={cls("glass", styles.container)}>
           <div className={styles.cardHeaderWrapper}>
             <h2 className={styles.cardHeader}>{props.name}</h2>
+            <h5>{props.address}</h5>
           </div>
           <div className={styles.cardImageWrapper}>
             <Image
