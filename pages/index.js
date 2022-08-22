@@ -1,3 +1,4 @@
+import { useEffect, useState, useContext } from "react";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import Image from "next/image";
@@ -5,8 +6,10 @@ import Image from "next/image";
 import Card from "../components/Card";
 import Banner from "../components/Banner";
 
-import bakeriesData from "../data/bakeries.json";
+import { StoreContext, ACTION_TYPES } from "../pages/_app";
 import { fetchBakeries } from "../lib/bakery-store";
+
+import useTrackLocation from "../hooks/use-track-location";
 
 export async function getStaticProps(context) {
   console.log("Hi GetStaticProps");
@@ -21,9 +24,39 @@ export async function getStaticProps(context) {
 }
 
 export default function Home(props) {
+  const { handleTrackLocation, locationErrorMsg, isFinding } =
+    useTrackLocation();
+  // const [bakeries, setBakeries] = useState([]);
+  const [bakeriesErrors, setBakeriesErrors] = useState(null);
+  const { dispatch, state } = useContext(StoreContext);
+
+  const { bakeries, latLong } = state;
+
+  console.log({ latLong, locationErrorMsg });
+
   const btnClickHandler = () => {
-    console.log("Btn is clicked, Don't Worry");
+    handleTrackLocation();
   };
+
+  useEffect(() => {
+    const fetchBakeriesClient = async () => {
+      if (latLong) {
+        try {
+          const fetchedBakeries = await fetchBakeries(latLong, 30);
+          console.log({ fetchedBakeries });
+          // setBakeries(fetchedBakeries);
+          dispatch({
+            type: ACTION_TYPES.SET_BAKERIES,
+            payload: { bakeries: fetchedBakeries },
+          });
+        } catch (err) {
+          console.log(err);
+          // setBakeriesErrors(err);
+        }
+      }
+    };
+    fetchBakeriesClient();
+  }, [latLong]);
 
   return (
     <div className={styles.container}>
@@ -35,9 +68,18 @@ export default function Home(props) {
 
       <main className={styles.main}>
         <Banner
-          buttonText="View shops nearby"
+          buttonText={isFinding ? "Locating..." : "View shops nearby"}
           btnClickHandler={btnClickHandler}
         />
+        {locationErrorMsg && (
+          <p style={{ color: "red" }}>
+            Something Went wrong: {locationErrorMsg}
+          </p>
+        )}
+        {bakeriesErrors && (
+          <p style={{ color: "red" }}>Something Went wrong: {bakeriesErrors}</p>
+        )}
+
         <div className={styles.heroImage}>
           <Image
             src="/static/hero-image.png"
@@ -46,8 +88,31 @@ export default function Home(props) {
             alt="Hero-Image"
           />
         </div>
+
+        {bakeries.length > 0 && (
+          <div className={styles.sectionWrapper}>
+            <h2 className={styles.heading2}>Stores near me</h2>
+            <div className={styles.cardLayout}>
+              {bakeries.map((bakery) => {
+                return (
+                  <Card
+                    name={bakery.name}
+                    address={bakery.address}
+                    imgUrl={
+                      bakery.imgUrl ||
+                      "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                    }
+                    href={`/bakeries/${bakery.id}`}
+                    key={bakery.id}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {props.bakeries.length > 0 && (
-          <>
+          <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Islamabad Stores</h2>
             <div className={styles.cardLayout}>
               {props.bakeries.map((bakery) => {
@@ -65,7 +130,7 @@ export default function Home(props) {
                 );
               })}
             </div>
-          </>
+          </div>
         )}
       </main>
     </div>
