@@ -6,7 +6,7 @@ import Image from "next/image";
 import Card from "../components/Card";
 import Banner from "../components/Banner";
 
-import { StoreContext, ACTION_TYPES } from "../pages/_app";
+import { StoreContext, ACTION_TYPES } from "../store/store-context";
 import { fetchBakeries } from "../lib/bakery-store";
 
 import useTrackLocation from "../hooks/use-track-location";

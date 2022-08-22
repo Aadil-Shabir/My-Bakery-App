@@ -1,3 +1,4 @@
+import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import styles from "../../styles/bakery.module.css";
@@ -6,6 +7,9 @@ import bakeriesData from "../../data/bakeries.json";
 import { fetchBakeries } from "../../lib/bakery-store";
 import Head from "next/head";
 import Image from "next/image";
+
+import { StoreContext } from "../../store/store-context";
+import { isEmpty } from "../../utils";
 
 import cls from "classnames";
 
@@ -38,9 +42,26 @@ export async function getStaticPaths() {
   };
 }
 
-const Bakeries = (props) => {
+const Bakeries = (initialProps) => {
+  const {
+    state: { bakeries },
+  } = useContext(StoreContext);
   const router = useRouter();
-  console.log("props", props);
+  const [bakery, setBakery] = useState(initialProps.bakeries);
+  console.log("props", initialProps);
+
+  const id = router.query.id;
+
+  useEffect(() => {
+    if (isEmpty(initialProps.bakeries)) {
+      if (bakeries.length > 0) {
+        const findBakeryById = bakeries.find((bakery) => {
+          return bakery.id.toString() === id;
+        });
+        setBakery(findBakeryById);
+      }
+    }
+  }, [id]);
 
   if (router.isFallback) {
     return <div>Loading...</div>;
@@ -50,7 +71,7 @@ const Bakeries = (props) => {
     console.log("handle Upvote");
   };
 
-  const { name, address, locality, imgUrl } = props.bakeries;
+  const { name, address, locality, imgUrl } = bakery;
 
   return (
     <div className={styles.layout}>
