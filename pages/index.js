@@ -42,16 +42,20 @@ export default function Home(props) {
     const fetchBakeriesClient = async () => {
       if (latLong) {
         try {
-          const fetchedBakeries = await fetchBakeries(latLong, 30);
-          console.log({ fetchedBakeries });
+          const response = await fetch(
+            `/api/getBakeriesByLocation?latLong=${latLong}&limit=30`
+          );
+          const bakeries = await response.json();
+          console.log({ bakeries });
           // setBakeries(fetchedBakeries);
           dispatch({
             type: ACTION_TYPES.SET_BAKERIES,
-            payload: { bakeries: fetchedBakeries },
+            payload: { bakeries: bakeries },
           });
+          setBakeriesErrors("");
         } catch (err) {
           console.log(err);
-          // setBakeriesErrors(err);
+          setBakeriesErrors(err);
         }
       }
     };
