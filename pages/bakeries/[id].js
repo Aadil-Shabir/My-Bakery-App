@@ -52,16 +52,51 @@ const Bakeries = (initialProps) => {
 
   const id = router.query.id;
 
+  const handleCreateBakery = async (bakery) => {
+    try {
+      const { id, name, address, neighborhood, locality, voting, imgUrl } =
+        bakery;
+      const response = await fetch("/api/createBakery", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          name,
+          address: address || "",
+          neighborhood: neighborhood || "",
+          locality,
+          voting: 0,
+          imgURL: imgUrl,
+        }),
+      });
+
+      const dbBakery = await response.json();
+      console.log(dbBakery, "DB");
+      console.log(bakery, "Simpul");
+    } catch (err) {
+      console.error("Error Creating Coffee Store", err);
+    }
+  };
+
   useEffect(() => {
     if (isEmpty(initialProps.bakeries)) {
       if (bakeries.length > 0) {
         const findBakeryById = bakeries.find((bakery) => {
           return bakery.id.toString() === id;
         });
-        setBakery(findBakeryById);
+        if (findBakeryById) {
+          setBakery(findBakeryById);
+          handleCreateBakery(findBakeryById);
+        }
       }
+    } else {
+      // SSG
+      console.log(initialProps, "Initial Props");
+      handleCreateBakery(initialProps.bakeries);
     }
-  }, [id]);
+  }, [id, initialProps, initialProps.bakeries]);
 
   if (router.isFallback) {
     return <div>Loading...</div>;
