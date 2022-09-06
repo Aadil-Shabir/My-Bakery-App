@@ -23,7 +23,6 @@ const getBakeryById = async (req, res) => {
   } catch (err) {
     res.status(500);
     res.json({ message: "Something went wrong", err });
-    console.error("Something went wrong", err);
   }
 };
 

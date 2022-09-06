@@ -47,7 +47,6 @@ const createBakery = async (req, res) => {
         res.json({ message: "ID is missing" });
       }
     } catch (err) {
-      console.log("Error Creating or Finding a Bakery", err);
       res.status(500);
       res.json({ message: "Error Creating or Finding a Bakery", err });
     }

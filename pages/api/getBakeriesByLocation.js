@@ -8,7 +8,6 @@ const getBakeriesByLocation = async (req, res) => {
     res.status(200);
     res.json(response);
   } catch (err) {
-    console.log("There is an Error", err);
     res.status(500);
     res.json({ message: "Oh no! Something went wrong", err });
   }

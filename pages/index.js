@@ -12,8 +12,6 @@ import { fetchBakeries } from "../lib/bakery-store";
 import useTrackLocation from "../hooks/use-track-location";
 
 export async function getStaticProps(context) {
-  console.log("Hi GetStaticProps");
-
   const bakeries = await fetchBakeries();
 
   return {
@@ -32,8 +30,6 @@ export default function Home(props) {
 
   const { bakeries, latLong } = state;
 
-  console.log({ latLong, locationErrorMsg });
-
   const btnClickHandler = () => {
     handleTrackLocation();
   };
@@ -46,15 +42,12 @@ export default function Home(props) {
             `/api/getBakeriesByLocation?latLong=${latLong}&limit=30`
           );
           const bakeries = await response.json();
-          console.log({ bakeries });
-          // setBakeries(fetchedBakeries);
           dispatch({
             type: ACTION_TYPES.SET_BAKERIES,
             payload: { bakeries: bakeries },
           });
           setBakeriesErrors("");
         } catch (err) {
-          console.log(err);
           setBakeriesErrors(err);
         }
       }

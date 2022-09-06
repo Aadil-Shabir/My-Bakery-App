@@ -15,7 +15,6 @@ import cls from "classnames";
 
 export async function getStaticProps(statisProps) {
   const params = statisProps.params;
-  console.log("params", params);
   const bakeries = await fetchBakeries();
   const bakeryById = bakeries.find((bakery) => {
     return bakery.id.toString() === params.id;
