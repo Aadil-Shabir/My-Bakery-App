@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import useSWR from "swr";
 import Link from "next/link";
 import styles from "../../styles/bakery.module.css";
 
-import bakeriesData from "../../data/bakeries.json";
 import { fetchBakeries } from "../../lib/bakery-store";
 import Head from "next/head";
 import Image from "next/image";
@@ -47,15 +47,24 @@ const Bakeries = (initialProps) => {
     state: { bakeries },
   } = useContext(StoreContext);
   const router = useRouter();
-  const [bakery, setBakery] = useState(initialProps.bakeries);
-  console.log("props", initialProps);
-
+  const [bakery, setBakery] = useState(initialProps.bakeries || {});
+  const [votingCount, setVotingCount] = useState(0);
   const id = router.query.id;
+  const { data, error } = useSWR(`/api/getBakeryById?id=${id}`, (url) =>
+    fetch(url).then((res) => res.json())
+  );
 
-  const handleCreateBakery = async (bakery) => {
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setBakery(data[0]);
+      setVotingCount(data[0].voting);
+    }
+  }, [data]);
+
+  const handleCreateBakery = async (selectedBakery) => {
     try {
       const { id, name, address, neighborhood, locality, voting, imgUrl } =
-        bakery;
+        selectedBakery;
       const response = await fetch("/api/createBakery", {
         method: "POST",
         headers: {
@@ -73,8 +82,6 @@ const Bakeries = (initialProps) => {
       });
 
       const dbBakery = await response.json();
-      console.log(dbBakery, "DB");
-      console.log(bakery, "Simpul");
     } catch (err) {
       console.error("Error Creating Coffee Store", err);
     }
@@ -93,7 +100,6 @@ const Bakeries = (initialProps) => {
       }
     } else {
       // SSG
-      console.log(initialProps, "Initial Props");
       handleCreateBakery(initialProps.bakeries);
     }
   }, [id, initialProps, initialProps.bakeries]);
@@ -102,9 +108,31 @@ const Bakeries = (initialProps) => {
     return <div>Loading...</div>;
   }
 
-  const handleUpvote = () => {
-    console.log("handle Upvote");
+  const handleUpvote = async () => {
+    try {
+      const response = await fetch("/api/upvoteBakeryById", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      });
+
+      const dbBakery = await response.json();
+      if (dbBakery && dbBakery.length > 0) {
+        let count = votingCount + 1;
+        setVotingCount(count);
+      }
+    } catch (err) {
+      console.error("Error Upvoting Bakery", err);
+    }
   };
+
+  if (error) {
+    return <div>Something went wrong retrieving Bakery Page</div>;
+  }
 
   const { name, address, locality, imgUrl } = bakery;
 
@@ -165,7 +193,7 @@ const Bakeries = (initialProps) => {
               height="24"
               alt={name}
             />
-            <p className={styles.text}>1</p>
+            <p className={styles.text}>{votingCount}</p>
           </div>
 
           <button className={styles.upvoteButton} onClick={handleUpvote}>
