@@ -6,7 +6,8 @@ body {
     Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
     sans-serif;
 
-  background: url("/static/sweet-gradient.png");
+  /* background: url("/static/sweet-gradient.png"); */
+  background-image: linear-gradient(to right, #B8860E, #CAA347, #EDDDB8);
 
   background-position: 50%;
   background-repeat: no-repeat;
